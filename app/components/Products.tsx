@@ -14,9 +14,9 @@ interface Product {
 
 type CategoryId = 'promotions' | 'menus' | 'burgers' | 'frites' | 'salades' | 'boissons' | 'desserts';
 
-interface Products {
-  [key in CategoryId]: Product[];
-}
+type Products = {
+  [K in CategoryId]: Product[];
+};
 
 const Products = () => {
   const location = useLocation();
