@@ -4,16 +4,43 @@ import { FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
-    name: '',
+    nom: '',
     email: '',
-    subject: '',
+    sujet: '',
     message: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Logique d'envoi du formulaire à implémenter
-    console.log('Form submitted:', formData);
+    setStatus('loading');
+
+    try {
+      const response = await fetch('https://backendcaporal-production.up.railway.app//contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de l\'envoi du formulaire');
+      }
+
+      setStatus('success');
+      // Réinitialiser le formulaire
+      setFormData({
+        nom: '',
+        email: '',
+        sujet: '',
+        message: ''
+      });
+    } catch (error) {
+      console.error('Erreur:', error);
+      setStatus('error');
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -41,7 +68,7 @@ const Contact = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 desktop:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Contact Information */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -84,16 +111,26 @@ const Contact = () => {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="bg-white rounded-lg p-8 shadow-md"
           >
+            {status === 'success' && (
+              <div className="mb-4 p-4 bg-green-100 text-green-700 rounded-md">
+                Votre message a été envoyé avec succès !
+              </div>
+            )}
+            {status === 'error' && (
+              <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-md">
+                Une erreur est survenue lors de l'envoi du message. Veuillez réessayer.
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                  Nom complet
+                <label htmlFor="nom" className="block text-sm font-medium text-gray-700">
+                  Nom
                 </label>
                 <input
                   type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
+                  id="nom"
+                  name="nom"
+                  value={formData.nom}
                   onChange={handleChange}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-spicy-red focus:ring-spicy-red"
                   required
@@ -114,13 +151,13 @@ const Contact = () => {
                 />
               </div>
               <div>
-                <label htmlFor="subject" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="sujet" className="block text-sm font-medium text-gray-700">
                   Sujet
                 </label>
                 <select
-                  id="subject"
-                  name="subject"
-                  value={formData.subject}
+                  id="sujet"
+                  name="sujet"
+                  value={formData.sujet}
                   onChange={handleChange}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-spicy-red focus:ring-spicy-red"
                   required
@@ -148,9 +185,10 @@ const Contact = () => {
               </div>
               <button
                 type="submit"
-                className="w-full bg-spicy-red text-crispy-white py-3 px-6 rounded-full font-semibold hover:bg-opacity-90 transition-colors duration-200"
+                disabled={status === 'loading'}
+                className="w-full bg-spicy-red text-crispy-white py-3 px-6 rounded-full font-semibold hover:bg-opacity-90 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Envoyer
+                {status === 'loading' ? 'Envoi en cours...' : 'Envoyer'}
               </button>
             </form>
           </motion.div>
