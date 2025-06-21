@@ -33,7 +33,7 @@ const StripePayment: React.FC<StripePaymentProps> = ({ amount, onSuccess, onErro
     try {
       // 1. Créer le PaymentIntent côté serveur
       console.log('📡 Création du PaymentIntent...');
-      const response = await fetch(`https://backendcaporal-production.up.railway.api/payment/create-payment-intent`, {
+      const response = await fetch(`https://backendcaporal-production.up.railway.app/payment/create-payment-intent`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json' 
