@@ -9,6 +9,7 @@ import Footer from './components/Footer';
 import Auth from './components/Auth';
 import Cart from './components/Cart';
 import Checkout from './components/Checkout';
+import OrderSuccess from './components/OrderSuccess';
 import { CartProvider } from './context/CartContext';
 
 const App = () => {
@@ -27,6 +28,7 @@ const App = () => {
               <Route path="/auth" element={<Auth />} />
               <Route path="/panier" element={<Cart />} />
               <Route path="/paiement" element={<Checkout />} />
+              <Route path="/order-success" element={<OrderSuccess />} />
             </Routes>
           </main>
           <Footer />

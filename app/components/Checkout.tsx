@@ -1,23 +1,24 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaLock, FaCreditCard, FaCheckCircle } from 'react-icons/fa';
+import { FaCheckCircle } from 'react-icons/fa';
+import { Elements } from '@stripe/react-stripe-js';
+import { stripePromise } from '../config/stripe';
+import StripePayment from './StripePayment';
 import { useCart } from '../context/CartContext';
 
 const Checkout = () => {
   const { items, total } = useCart();
   const [step, setStep] = useState(1);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsProcessing(true);
-    
-    // Simuler un traitement de paiement
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsProcessing(false);
+  const handlePaymentSuccess = () => {
+    console.log('✅ Paiement réussi dans Checkout');
     setIsSuccess(true);
+  };
+
+  const handlePaymentError = (error: string) => {
+    console.log('❌ Erreur de paiement dans Checkout:', error);
+    // L'erreur est déjà gérée dans StripePayment
   };
 
   if (isSuccess) {
@@ -79,14 +80,6 @@ const Checkout = () => {
                 }`}>
                   2
                 </div>
-                <div className={`w-24 h-1 ${
-                  step >= 3 ? 'bg-spicy-red' : 'bg-gray-200'
-                }`} />
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  step >= 3 ? 'bg-spicy-red text-crispy-white' : 'bg-gray-200 text-gray-600'
-                }`}>
-                  3
-                </div>
               </div>
             </div>
 
@@ -119,7 +112,7 @@ const Checkout = () => {
                     onClick={() => setStep(2)}
                     className="w-full bg-spicy-red text-crispy-white py-3 rounded-full hover:bg-opacity-90 transition-colors duration-200"
                   >
-                    Continuer
+                    Continuer vers le paiement
                   </button>
                 </motion.div>
               )}
@@ -132,64 +125,23 @@ const Checkout = () => {
                   exit={{ opacity: 0, x: -20 }}
                   className="space-y-6"
                 >
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Informations de paiement</h2>
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Numéro de carte
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-spicy-red focus:border-spicy-red"
-                          placeholder="1234 5678 9012 3456"
-                        />
-                        <FaCreditCard className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Date d'expiration
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-spicy-red focus:border-spicy-red"
-                          placeholder="MM/AA"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          CVV
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-spicy-red focus:border-spicy-red"
-                          placeholder="123"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm text-gray-600">
-                      <FaLock className="text-spicy-red" />
-                      <span>Paiement sécurisé</span>
-                    </div>
-                    <div className="flex space-x-4">
-                      <button
-                        type="button"
-                        onClick={() => setStep(1)}
-                        className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-full hover:bg-gray-300 transition-colors duration-200"
-                      >
-                        Retour
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={isProcessing}
-                        className="flex-1 bg-spicy-red text-crispy-white py-3 rounded-full hover:bg-opacity-90 transition-colors duration-200 disabled:opacity-50"
-                      >
-                        {isProcessing ? 'Traitement...' : 'Payer'}
-                      </button>
-                    </div>
-                  </form>
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900">Paiement sécurisé</h2>
+                    <button
+                      onClick={() => setStep(1)}
+                      className="text-spicy-red hover:text-opacity-80 transition-colors duration-200"
+                    >
+                      ← Retour
+                    </button>
+                  </div>
+                  
+                  <Elements stripe={stripePromise}>
+                    <StripePayment
+                      amount={Math.round(total * 100)} // Conversion en centimes
+                      onSuccess={handlePaymentSuccess}
+                      onError={handlePaymentError}
+                    />
+                  </Elements>
                 </motion.div>
               )}
             </AnimatePresence>
